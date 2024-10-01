@@ -27,7 +27,7 @@ class Server
         $this->initPlatform();
     }
 
-    protected function initHooks()
+    protected function initHooks(): void
     {
         $onStart = $this->http->onStart();
         $onStart->setCallback(function () {
@@ -43,7 +43,7 @@ class Server
             });
     }
 
-    protected function initResources()
+    protected function initResources(): void
     {
 
         $container = $this->http->getContainer();
@@ -51,20 +51,20 @@ class Server
         $geodb = new Dependency();
         $geodb->setName('geodb');
         $geodb->setCallback(function () {
-            var_dump('returning geodb');
+            /** @phpstan-ignore class.notFound */
             return new Reader(__DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb');
         });
 
         $container->set($geodb);
     }
 
-    protected function initPlatform()
+    protected function initPlatform(): void
     {
         $platform = new Geo();
         $platform->init(Service::TYPE_HTTP);
     }
 
-    public function start()
+    public function start(): void
     {
         $this->http->start();
     }

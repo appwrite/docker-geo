@@ -27,10 +27,12 @@ class Get extends Action
             ->callback(fn ($ip, $geodb, $response) => $this->action($ip, $geodb, $response));
     }
 
-    public function action(string $ip, Reader $geodb, Response $response)
+
+    public function action(string $ip, Reader $geodb /** @phpstan-ignore class.notFound */, Response $response): void
     {
         $output['ip'] = $ip;
 
+        // @phpstan-ignore-next-line
         $record = $geodb->get($ip);
 
         if ($record) {
