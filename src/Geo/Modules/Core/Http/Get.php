@@ -27,7 +27,7 @@ class Get extends Action
             ->callback(fn ($ip, $geodb, $response) => $this->action($ip, $geodb, $response));
     }
 
-    public function action(string $ip, Reader $geodb,  Response $response)
+    public function action(string $ip, Reader $geodb, Response $response)
     {
         $output['ip'] = $ip;
 

@@ -30,17 +30,17 @@ class Server
     protected function initHooks()
     {
         $onStart = $this->http->onStart();
-        $onStart->setCallback(function() {
+        $onStart->setCallback(function () {
             Console::log('Server started');
         });
 
         $error = $this->http->error();
         $error
             ->inject('error')
-            ->setCallback(function(Throwable $error) {
-            Console::error($error->getMessage());
-            Console::log($error->getTraceAsString());
-        });
+            ->setCallback(function (Throwable $error) {
+                Console::error($error->getMessage());
+                Console::log($error->getTraceAsString());
+            });
     }
 
     protected function initResources()
@@ -50,7 +50,7 @@ class Server
 
         $geodb = new Dependency();
         $geodb->setName('geodb');
-        $geodb->setCallback(function() {
+        $geodb->setCallback(function () {
             var_dump('returning geodb');
             return new Reader(__DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb');
         });
