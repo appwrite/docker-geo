@@ -4,10 +4,13 @@
     "require": {
         "php": ">=8.3.0",
         "utopia-php/fetch": "^0.2.1",
-        "utopia-php/http": "^1.0",
-        "utopia-php/platform": "^0.8.1",
+        "utopia-php/http": "1.0.*",
+        "utopia-php/platform": "feat-upgrade-http-dev",
         "utopia-php/di": "^0.1.0",
-        "utopia-php/system": "^0.8.0"
+        "utopia-php/system": "^0.8.0",
+        "utopia-php/logger": "^0.6.1",
+        "utopia-php/dsn": "^0.2.1",
+        "utopia-php/cli": "dev-feat-upgrade-http as 0.19.0"
     },
     "autoload": {
         "psr-4": {
