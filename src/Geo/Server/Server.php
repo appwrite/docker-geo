@@ -9,7 +9,7 @@ use Utopia\DI\Dependency;
 use Utopia\Http\Adapter\Swoole\Server as SwooleServer;
 use Utopia\Http\Http;
 use MaxMind\Db\Reader;
-use Utopia\Http\Request;
+use Throwable;
 use Utopia\Platform\Service;
 
 class Server
@@ -33,6 +33,14 @@ class Server
         $onStart->setCallback(function() {
             Console::log('Server started');
         });
+
+        $error = $this->http->error();
+        $error
+            ->inject('error')
+            ->setCallback(function(Throwable $error) {
+            Console::error($error->getMessage());
+            Console::log($error->getTraceAsString());
+        });
     }
 
     protected function initResources()
@@ -43,7 +51,8 @@ class Server
         $geodb = new Dependency();
         $geodb->setName('geodb');
         $geodb->setCallback(function() {
-            return new Reader(__DIR__ . '/assets/dbip/dbip-country-lite-2024-09.mmdb');
+            var_dump('returning geodb');
+            return new Reader(__DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb');
         });
 
         $container->set($geodb);

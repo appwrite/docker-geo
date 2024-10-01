@@ -12,7 +12,8 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM appwrite/utopia-base:php-8.3-0.1.1 as final
+# TODO fix utopia-php/docker-base and use appwrite/utopia-base
+FROM appwrite/base:0.9.3 as final 
 
 LABEL maintainer="team@appwrite.io"
 
