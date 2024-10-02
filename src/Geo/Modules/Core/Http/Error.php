@@ -33,7 +33,7 @@ class Error extends Action
             ->callback(fn ($route, $error, $logger, $response, $log) => $this->action($route, $error, $logger, $response, $log));
     }
 
-    public function action(?Route $route, Throwable $error, ?Logger $logger, Response $response, Log $log)
+    public function action(?Route $route, Throwable $error, ?Logger $logger, Response $response, Log $log): void
     {
         $this->logError($log, $error, "httpError", $logger, $route);
 
@@ -122,11 +122,11 @@ class Error extends Action
             $log->setEnvironment(Http::isProduction() ? Log::ENVIRONMENT_PRODUCTION : Log::ENVIRONMENT_STAGING);
             try {
                 $responseCode = $logger->addLog($log);
+                Console::info('Geo log pushed with status code: ' . $responseCode);
             } catch (Throwable $th) {
                 Console::error('Error pushing log: ' . $th->getmessage());
                 Console::error($th->getTraceAsString());
             }
-            Console::info('Geo log pushed with status code: ' . $responseCode);
         }
     }
 }

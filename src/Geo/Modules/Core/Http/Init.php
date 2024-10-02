@@ -25,7 +25,7 @@ class Init extends Action
                 => $this->action($request));
     }
 
-    public function action(Request $request)
+    public function action(Request $request): void
     {
         $secretKey = \explode(' ', $request->getHeader('authorization', ''))[1] ?? '';
         if (empty($secretKey) || $secretKey !== System::getEnv('GEO_SECRET', '')) {

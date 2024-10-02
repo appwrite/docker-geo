@@ -31,7 +31,7 @@ class Server
         ]), new Container(), 'UTC');
         $this->http = $http;
 
-        $this->http->setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
+        $this->http->setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION) ?? Http::MODE_TYPE_PRODUCTION);
 
         $this->initResources();
         $this->initHooks();
