@@ -6,11 +6,11 @@
         "utopia-php/fetch": "0.5.*",
         "utopia-php/http": "1.2.*",
         "utopia-php/platform": "dev-feat-upgrade-http",
-        "utopia-php/di": "0.1.*",
+        "utopia-php/di": "0.3.*",
         "utopia-php/system": "^0.10.1",
         "utopia-php/logger": "^0.7.1",
         "utopia-php/dsn": "^0.2.1",
-        "utopia-php/cli": "0.22.*",
+        "utopia-php/cli": "0.23.*",
         "utopia-php/console": "^0.1.1"
     },
     "autoload": {
