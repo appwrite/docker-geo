@@ -3,7 +3,7 @@
 namespace Appwrite\Geo\Modules\Core\Http;
 
 use Throwable;
-use Utopia\CLI\Console;
+use Utopia\Console;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Route;
@@ -67,7 +67,7 @@ class Error extends Action
             'code' => $code,
             'file' => $file,
             'line' => $line,
-            'trace' => \json_encode($trace, JSON_UNESCAPED_UNICODE) === false ? [] : $trace, // check for failing encode
+            'trace' => \json_encode($trace, JSON_UNESCAPED_UNICODE) === false ? [] : $trace,
             'version' => $version
         ] : [
             'message' => $message,
@@ -84,20 +84,25 @@ class Error extends Action
         $response->json($output);
     }
 
-    protected function logError(Log $log, Throwable $error, string $action, Logger $logger = null, Route $route = null): void
+    protected function logError(Log $log, Throwable $error, string $action, ?Logger $logger = null, ?Route $route = null): void
     {
-        Console::error('[Error] Type: ' . get_class($error));
-        Console::error('[Error] Message: ' . $error->getMessage());
-        Console::error('[Error] File: ' . $error->getFile());
-        Console::error('[Error] Line: ' . $error->getLine());
+        $code = $error->getCode();
+        $isServerError = $code >= 500 || $code === 0;
 
-        if ($logger && ($error->getCode() === 500 || $error->getCode() === 0)) {
+        if ($isServerError) {
+            Console::error('[Error] Type: ' . get_class($error));
+            Console::error('[Error] Message: ' . $error->getMessage());
+            Console::error('[Error] File: ' . $error->getFile());
+            Console::error('[Error] Line: ' . $error->getLine());
+        }
+
+        if ($logger && $isServerError) {
             $version = (string) System::getEnv('GEO_VERSION', '');
             if (empty($version)) {
                 $version = 'UNKNOWN';
             }
 
-            $log->setNamespace("executor");
+            $log->setNamespace("geo");
             $log->setServer(\gethostname() !== false ? \gethostname() : null);
             $log->setVersion($version);
             $log->setType(Log::TYPE_ERROR);
@@ -114,8 +119,6 @@ class Error extends Action
             $log->addExtra('file', $error->getFile());
             $log->addExtra('line', $error->getLine());
             $log->addExtra('trace', $error->getTraceAsString());
-            // TODO: @Meldiron Uncomment, was warning: Undefined array key "file" in Sentry.php on line 68
-            // $log->addExtra('detailedTrace', $error->getTrace());
 
             $log->setAction($action);
 
@@ -124,7 +127,7 @@ class Error extends Action
                 $responseCode = $logger->addLog($log);
                 Console::info('Geo log pushed with status code: ' . $responseCode);
             } catch (Throwable $th) {
-                Console::error('Error pushing log: ' . $th->getmessage());
+                Console::error('Error pushing log: ' . $th->getMessage());
                 Console::error($th->getTraceAsString());
             }
         }

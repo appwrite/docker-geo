@@ -19,7 +19,7 @@ class Init extends Action
         $this->setType(Action::TYPE_INIT);
 
         $this
-            ->groups(['*'])
+            ->groups(['api'])
             ->inject('request')
             ->callback(fn ($request)
                 => $this->action($request));
@@ -27,9 +27,16 @@ class Init extends Action
 
     public function action(Request $request): void
     {
-        $secretKey = \explode(' ', $request->getHeader('authorization', ''))[1] ?? '';
+        $authHeader = $request->getHeader('authorization', '');
+        $parts = \explode(' ', $authHeader, 2);
+
+        if (\count($parts) !== 2 || \strtolower($parts[0]) !== 'bearer') {
+            throw new Exception('Missing or invalid authorization header', 401);
+        }
+
+        $secretKey = $parts[1];
         if (empty($secretKey) || $secretKey !== System::getEnv('GEO_SECRET', '')) {
-            throw new Exception('Missing Geo server key', 401);
+            throw new Exception('Invalid Geo server key', 401);
         }
     }
 }

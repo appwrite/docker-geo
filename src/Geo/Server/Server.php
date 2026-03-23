@@ -4,9 +4,7 @@ namespace Appwrite\Geo\Server;
 
 use Appwrite\Geo\Platform\Geo;
 use Exception;
-use Utopia\CLI\Console;
-use Utopia\DI\Container;
-use Utopia\DI\Dependency;
+use Utopia\Console;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server as SwooleServer;
 use Utopia\Http\Http;
@@ -24,14 +22,13 @@ use Utopia\System\System;
 class Server
 {
     protected Http $http;
+
     public function __construct(?Http $http = null)
     {
-        $http ??= new Http(new SwooleServer('0.0.0.0', '80', [
-
-        ]), new Container(), 'UTC');
+        $http ??= new Http(new SwooleServer('0.0.0.0', '80', []), 'UTC');
         $this->http = $http;
 
-        $this->http->setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION) ?? Http::MODE_TYPE_PRODUCTION);
+        Http::setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
 
         $this->initResources();
         $this->initHooks();
@@ -40,39 +37,29 @@ class Server
 
     protected function initHooks(): void
     {
-
         $onStart = Http::onStart();
-        $onStart->setCallback(function () {
+        $onStart->action(function () {
             Console::log('Server started');
         });
     }
 
     protected function initResources(): void
     {
-
-        $container = $this->http->getContainer();
-
-        $geodb = new Dependency();
-        $geodb->setName('geodb');
-        $geodb->setCallback(function () {
-            /** @phpstan-ignore class.notFound */
-            return new Reader(__DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb');
+        $this->http->setResource('geodb', function () {
+            $defaultPath = __DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb';
+            $path = System::getEnv('GEO_DBIP_PATH', $defaultPath);
+            if (!\is_readable($path)) {
+                throw new Exception('GeoIP database file not found or not readable: ' . $path);
+            }
+            return new Reader($path);
         });
 
-        $container->set($geodb);
-
-        $logger = new Dependency();
-        $logger->setName('logger');
-
-        /**
-         * Create logger
-         */
-        $logger->setCallback(function () {
+        $this->http->setResource('logger', function () {
             $providerName = System::getEnv('GEO_LOGGING_PROVIDER', '');
             $providerConfig = System::getEnv('GEO_LOGGING_CONFIG', '');
 
             try {
-                $loggingProvider = new DSN($providerConfig ?? '');
+                $loggingProvider = new DSN($providerConfig);
 
                 $providerName = $loggingProvider->getScheme();
                 $providerConfig = match ($providerName) {
@@ -81,18 +68,18 @@ class Server
                     default => ['key' => $loggingProvider->getHost()],
                 };
             } catch (Throwable) {
-                $configChunks = \explode(";", ($providerConfig ?? ''));
+                $configChunks = \explode(";", $providerConfig);
 
                 $providerConfig = match ($providerName) {
-                    'sentry' => ['key' => $configChunks[0], 'projectId' => $configChunks[1] ?? '', 'host' => '',],
-                    'logowl' => ['ticket' => $configChunks[0] ?? '', 'host' => ''],
+                    'sentry' => ['key' => $configChunks[0], 'projectId' => $configChunks[1] ?? '', 'host' => ''],
+                    'logowl' => ['ticket' => $configChunks[0], 'host' => ''],
                     default => ['key' => $providerConfig],
                 };
             }
 
             $logger = null;
 
-            if (!empty($providerName) && is_array($providerConfig) && Logger::hasProvider($providerName)) {
+            if (!empty($providerName) && Logger::hasProvider($providerName)) {
                 $adapter = match ($providerName) {
                     'sentry' => new Sentry($providerConfig['projectId'] ?? '', $providerConfig['key'] ?? '', $providerConfig['host'] ?? ''),
                     'logowl' => new LogOwl($providerConfig['ticket'] ?? '', $providerConfig['host'] ?? ''),
@@ -107,14 +94,7 @@ class Server
             return $logger;
         });
 
-        $log = new Dependency();
-        $log->setName('log');
-        $log->setCallback(fn () => new Log());
-
-        $container->set($logger);
-        $container->set($log);
-
-
+        $this->http->setResource('log', fn () => new Log());
     }
 
     protected function initPlatform(): void

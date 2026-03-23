@@ -2,9 +2,10 @@
 
 namespace Appwrite\Geo\Modules\Core\Http;
 
+use Exception;
 use Utopia\Http\Response;
-use Utopia\Http\Validator\Text;
 use Utopia\Platform\Action;
+use Utopia\Validator\Text;
 use MaxMind\Db\Reader;
 
 class Get extends Action
@@ -27,25 +28,28 @@ class Get extends Action
             ->callback(fn ($ip, $geodb, $response) => $this->action($ip, $geodb, $response));
     }
 
-
-    public function action(string $ip, Reader $geodb /** @phpstan-ignore class.notFound */, Response $response): void
+    public function action(string $ip, Reader $geodb, Response $response): void
     {
-        $output['ip'] = $ip;
+        if (!\filter_var($ip, FILTER_VALIDATE_IP)) {
+            throw new Exception('Invalid IP address', 400);
+        }
 
-        // @phpstan-ignore-next-line
+        $output = ['ip' => $ip];
+
         $record = $geodb->get($ip);
 
         if ($record) {
-            $output['countryCode'] = $record['country']['iso_code'];
-            $output['country'] = $record['country']['names'];
-            $output['continent'] = $record['continent']['names'];
-            $output['continentCode'] = $record['continent']['code'];
+            $output['countryCode'] = $record['country']['iso_code'] ?? '--';
+            $output['country'] = $record['country']['names'] ?? [];
+            $output['continent'] = $record['continent']['names'] ?? [];
+            $output['continentCode'] = $record['continent']['code'] ?? '--';
         } else {
             $output['countryCode'] = '--';
             $output['country'] = '';
             $output['continent'] = '';
             $output['continentCode'] = '--';
         }
+
         $response->json($output);
         $response->end();
     }

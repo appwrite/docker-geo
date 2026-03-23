@@ -27,5 +27,28 @@ services:
     environment:
       - GEO_ENV
       - GEO_SECRET
+      - GEO_DBIP_PATH
       - GEO_LOGGING_PROVIDER
       - GEO_LOGGING_CONFIG
+
+  tests:
+    container_name: geo-tests
+    <<: *x-logging
+    image: geo-dev
+    build:
+      context: .
+      args:
+        TESTING: true
+    volumes:
+      - ./tests:/usr/src/code/tests
+      - ./phpunit.xml:/usr/src/code/phpunit.xml
+    environment:
+      - GEO_TEST_HOST=geo
+      - GEO_TEST_PORT=80
+      - GEO_TEST_SECRET=${GEO_SECRET:-test-secret}
+    depends_on:
+      - geo
+    entrypoint:
+      - vendor/bin/phpunit
+      - --testsuite
+      - e2e
