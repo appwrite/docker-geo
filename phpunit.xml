@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.3/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    testdox="true"
+>
+    <testsuites>
+        <testsuite name="e2e">
+            <directory>tests/E2E</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="GEO_TEST_HOST" value="localhost"/>
+        <env name="GEO_TEST_PORT" value="8080"/>
+        <env name="GEO_TEST_SECRET" value="test-secret"/>
+    </php>
+</phpunit>
