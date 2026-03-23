@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fcaff1db7e755f49d7d2edb5c2e2abf6",
+    "content-hash": "5a2ced5ac99210c582d368c4ca65bb4c",
     "packages": [
         {
             "name": "brick/math",
@@ -2273,6 +2273,54 @@
                 "source": "https://github.com/utopia-php/compression/tree/0.1.4"
             },
             "time": "2026-02-17T05:53:40+00:00"
+        },
+        {
+            "name": "utopia-php/console",
+            "version": "0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/utopia-php/console.git",
+                "reference": "d298e43960780e6d76e66de1228c75dc81220e3e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/utopia-php/console/zipball/d298e43960780e6d76e66de1228c75dc81220e3e",
+                "reference": "d298e43960780e6d76e66de1228c75dc81220e3e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "require-dev": {
+                "laravel/pint": "1.2.*",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^9.3",
+                "squizlabs/php_codesniffer": "^3.6",
+                "swoole/ide-helper": "4.8.8"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Utopia\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Console helpers for logging, prompting, and executing commands",
+            "keywords": [
+                "cli",
+                "console",
+                "php",
+                "terminal",
+                "utopia"
+            ],
+            "support": {
+                "issues": "https://github.com/utopia-php/console/issues",
+                "source": "https://github.com/utopia-php/console/tree/0.1.1"
+            },
+            "time": "2026-02-10T10:20:29+00:00"
         },
         {
             "name": "utopia-php/di",

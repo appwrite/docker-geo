@@ -10,7 +10,8 @@
         "utopia-php/system": "^0.10.1",
         "utopia-php/logger": "^0.7.1",
         "utopia-php/dsn": "^0.2.1",
-        "utopia-php/cli": "0.22.*"
+        "utopia-php/cli": "0.22.*",
+        "utopia-php/console": "^0.1.1"
     },
     "autoload": {
         "psr-4": {

@@ -4,6 +4,7 @@ namespace Appwrite\Geo\Server;
 
 use Appwrite\Geo\Platform\Geo;
 use Exception;
+use Utopia\Console;
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;
 use Utopia\DSN\DSN;
@@ -41,7 +42,7 @@ class Server
     {
         $onStart = Http::onStart();
         $onStart->action(function () {
-            \error_log('Server started');
+            Console::log('Server started');
         });
     }
 
