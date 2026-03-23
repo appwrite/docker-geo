@@ -6,7 +6,6 @@ use Appwrite\Geo\Platform\Geo;
 use Exception;
 use Utopia\Console;
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server as SwooleServer;
 use Utopia\Http\Http;
@@ -24,11 +23,10 @@ use Utopia\System\System;
 class Server
 {
     protected Http $http;
+
     public function __construct(?Http $http = null)
     {
-        $http ??= new Http(new SwooleServer('0.0.0.0', '80', [
-
-        ]), new Container(), 'UTC');
+        $http ??= new Http(new SwooleServer('0.0.0.0', '80', []), new Container(), 'UTC');
         $this->http = $http;
 
         $this->http->setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
@@ -50,9 +48,7 @@ class Server
     {
         $container = $this->http->getContainer();
 
-        $geodb = new Dependency();
-        $geodb->setName('geodb');
-        $geodb->setCallback(function () {
+        $container->set('geodb', function () {
             $defaultPath = __DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb';
             $path = System::getEnv('GEO_DBIP_PATH', $defaultPath);
             if (!\is_readable($path)) {
@@ -61,12 +57,7 @@ class Server
             return new Reader($path);
         });
 
-        $container->set($geodb);
-
-        $logger = new Dependency();
-        $logger->setName('logger');
-
-        $logger->setCallback(function () {
+        $container->set('logger', function () {
             $providerName = System::getEnv('GEO_LOGGING_PROVIDER', '');
             $providerConfig = System::getEnv('GEO_LOGGING_CONFIG', '');
 
@@ -106,12 +97,7 @@ class Server
             return $logger;
         });
 
-        $log = new Dependency();
-        $log->setName('log');
-        $log->setCallback(fn () => new Log());
-
-        $container->set($logger);
-        $container->set($log);
+        $container->set('log', fn () => new Log());
     }
 
     protected function initPlatform(): void

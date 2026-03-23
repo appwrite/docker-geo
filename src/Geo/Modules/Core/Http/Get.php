@@ -5,6 +5,7 @@ namespace Appwrite\Geo\Modules\Core\Http;
 use Exception;
 use Utopia\Http\Response;
 use Utopia\Platform\Action;
+use Utopia\Validator\Text;
 use MaxMind\Db\Reader;
 
 class Get extends Action
@@ -20,7 +21,7 @@ class Get extends Action
             ->setHttpMethod(Action::HTTP_REQUEST_METHOD_GET)
             ->setHttpPath('/v1/ips/:ip')
             ->desc('Get locale from IP')
-            ->param('ip', '', fn () => true, 'IP Address')
+            ->param('ip', '', new Text(100), 'IP Address')
             ->groups(['api'])
             ->inject('geodb')
             ->inject('response')
