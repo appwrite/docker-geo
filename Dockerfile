@@ -1,8 +1,4 @@
-FROM composer:2 AS composer-bin
-
-FROM appwrite/base:1.1.1 AS vendor
-
-COPY --from=composer-bin /usr/bin/composer /usr/bin/composer
+FROM composer:2 AS composer
 
 ARG TESTING=false
 ENV TESTING=$TESTING
@@ -12,7 +8,7 @@ WORKDIR /usr/local/src/
 COPY composer.lock /usr/local/src/
 COPY composer.json /usr/local/src/
 
-RUN composer install --optimize-autoloader \
+RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
@@ -22,7 +18,7 @@ LABEL maintainer="team@appwrite.io"
 
 WORKDIR /usr/src/code
 
-COPY --from=vendor /usr/local/src/vendor /usr/src/code/vendor
+COPY --from=composer /usr/local/src/vendor /usr/src/code/vendor
 
 # Add Source Code
 COPY ./app /usr/src/code/app
