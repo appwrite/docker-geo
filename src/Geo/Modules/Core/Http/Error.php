@@ -97,7 +97,7 @@ class Error extends Action
                 $version = 'UNKNOWN';
             }
 
-            $log->setNamespace("executor");
+            $log->setNamespace("geo");
             $log->setServer(\gethostname() !== false ? \gethostname() : null);
             $log->setVersion($version);
             $log->setType(Log::TYPE_ERROR);

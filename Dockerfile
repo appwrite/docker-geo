@@ -13,7 +13,7 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
 # TODO fix utopia-php/docker-base and use appwrite/utopia-base
-FROM appwrite/base:0.9.3 as final 
+FROM appwrite/base:1.1.1 as final
 
 LABEL maintainer="team@appwrite.io"
 
@@ -26,5 +26,8 @@ COPY ./app /usr/src/code/app
 COPY ./src /usr/src/code/src
 
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -sf http://localhost:80/v1/health || exit 1
 
 CMD ["php", "app/http.php"]

@@ -27,5 +27,6 @@ services:
     environment:
       - GEO_ENV
       - GEO_SECRET
+      - GEO_DBIP_PATH
       - GEO_LOGGING_PROVIDER
       - GEO_LOGGING_CONFIG

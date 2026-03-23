@@ -55,8 +55,10 @@ class Server
         $geodb = new Dependency();
         $geodb->setName('geodb');
         $geodb->setCallback(function () {
+            $defaultPath = __DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb';
+            $path = System::getEnv('GEO_DBIP_PATH', $defaultPath);
             /** @phpstan-ignore class.notFound */
-            return new Reader(__DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb');
+            return new Reader($path);
         });
 
         $container->set($geodb);
