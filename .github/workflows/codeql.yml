@@ -1,16 +1,16 @@
-name: "CodeQL"
+name: "PHP Quality"
 
 on: [pull_request]
 jobs:
   lint:
-    name: CodeQL
+    name: Lint & Static Analysis
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Run CodeQL
+    - name: Run lint and static analysis
       run: |
         docker run --rm -v $PWD:/app composer:2 sh -c \
         "composer install --profile --ignore-platform-reqs && composer lint && composer check"

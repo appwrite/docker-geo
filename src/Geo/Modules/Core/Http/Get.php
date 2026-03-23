@@ -40,8 +40,8 @@ class Get extends Action
 
         if ($record) {
             $output['countryCode'] = $record['country']['iso_code'] ?? '--';
-            $output['country'] = $record['country']['names'] ?? '';
-            $output['continent'] = $record['continent']['names'] ?? '';
+            $output['country'] = $record['country']['names'] ?? [];
+            $output['continent'] = $record['continent']['names'] ?? [];
             $output['continentCode'] = $record['continent']['code'] ?? '--';
         } else {
             $output['countryCode'] = '--';
