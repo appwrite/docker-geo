@@ -1,4 +1,6 @@
-FROM composer:2 AS composer
+FROM appwrite/base:1.1.1 AS composer
+
+RUN apk add --no-cache composer
 
 ARG TESTING=false
 ENV TESTING=$TESTING
@@ -8,11 +10,10 @@ WORKDIR /usr/local/src/
 COPY composer.lock /usr/local/src/
 COPY composer.json /usr/local/src/
 
-RUN composer install --ignore-platform-reqs --optimize-autoloader \
+RUN composer install --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-# TODO fix utopia-php/docker-base and use appwrite/utopia-base
 FROM appwrite/base:1.1.1 as final
 
 LABEL maintainer="team@appwrite.io"
