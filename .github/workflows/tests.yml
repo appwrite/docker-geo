@@ -1,0 +1,41 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  GEO_SECRET: test-secret
+  GEO_ENV: development
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start services
+        run: docker compose up -d --build geo
+
+      - name: Wait for server to be ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/v1/health; then
+              echo "Server is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server failed to start"
+          docker compose logs geo
+          exit 1
+
+      - name: Run E2E tests
+        run: docker compose run --rm tests
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs geo

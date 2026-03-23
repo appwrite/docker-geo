@@ -4,7 +4,7 @@ namespace Appwrite\Geo\Modules\Core\Http;
 
 use Exception;
 use Utopia\Http\Response;
-use Utopia\Http\Validator\Text;
+use Utopia\Validator\Text;
 use Utopia\Platform\Action;
 use MaxMind\Db\Reader;
 
