@@ -8,10 +8,9 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Run CodeQL
       run: |
-        docker run --rm -v $PWD:/app composer sh -c \
-        "composer install --profile --ignore-platform-reqs && composer check"
-        
+        docker run --rm -v $PWD:/app composer:2 sh -c \
+        "composer install --profile --ignore-platform-reqs && composer lint && composer check"

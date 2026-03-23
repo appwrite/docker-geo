@@ -28,6 +28,6 @@ COPY ./src /usr/src/code/src
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -sf http://localhost:80/v1/health || exit 1
+    CMD php -r "exit(str_contains(file_get_contents('http://localhost:80/v1/health'), 'ok') ? 0 : 1);"
 
 CMD ["php", "app/http.php"]

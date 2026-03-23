@@ -42,7 +42,7 @@ class Server
     {
 
         $onStart = Http::onStart();
-        $onStart->setCallback(function () {
+        $onStart->action(function () {
             Console::log('Server started');
         });
     }
@@ -57,6 +57,9 @@ class Server
         $geodb->setCallback(function () {
             $defaultPath = __DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2024-09.mmdb';
             $path = System::getEnv('GEO_DBIP_PATH', $defaultPath);
+            if (!\is_readable($path)) {
+                throw new Exception('GeoIP database file not found or not readable: ' . $path);
+            }
             /** @phpstan-ignore class.notFound */
             return new Reader($path);
         });

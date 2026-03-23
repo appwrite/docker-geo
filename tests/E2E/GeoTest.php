@@ -62,8 +62,10 @@ class GeoTest extends Base
 
         $this->assertEquals(200, $response['status']);
         $this->assertEquals('192.0.2.1', $response['json']['ip']);
-        // Should return defaults for unknown IPs
-        $this->assertArrayHasKey('countryCode', $response['json']);
+        $this->assertEquals('--', $response['json']['countryCode']);
+        $this->assertEquals('', $response['json']['country']);
+        $this->assertEquals('', $response['json']['continent']);
+        $this->assertEquals('--', $response['json']['continentCode']);
     }
 
     public function testGetIpv6ReturnsGeoData(): void

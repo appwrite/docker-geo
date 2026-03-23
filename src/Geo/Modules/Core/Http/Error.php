@@ -86,12 +86,19 @@ class Error extends Action
 
     protected function logError(Log $log, Throwable $error, string $action, Logger $logger = null, Route $route = null): void
     {
-        Console::error('[Error] Type: ' . get_class($error));
-        Console::error('[Error] Message: ' . $error->getMessage());
-        Console::error('[Error] File: ' . $error->getFile());
-        Console::error('[Error] Line: ' . $error->getLine());
+        $code = $error->getCode();
+        $isServerError = $code === 500 || $code === 0 || $code >= 500;
 
-        if ($logger && ($error->getCode() === 500 || $error->getCode() === 0)) {
+        if ($isServerError) {
+            Console::error('[Error] Type: ' . get_class($error));
+            Console::error('[Error] Message: ' . $error->getMessage());
+            Console::error('[Error] File: ' . $error->getFile());
+            Console::error('[Error] Line: ' . $error->getLine());
+        } else {
+            Console::warning('[Warning] ' . $error->getMessage() . ' (code: ' . $code . ')');
+        }
+
+        if ($logger && $isServerError) {
             $version = (string) System::getEnv('GEO_VERSION', '');
             if (empty($version)) {
                 $version = 'UNKNOWN';
