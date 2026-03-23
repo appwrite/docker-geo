@@ -4,7 +4,6 @@ namespace Appwrite\Geo\Modules\Core\Http;
 
 use Exception;
 use Utopia\Http\Response;
-use Utopia\Validator\Text;
 use Utopia\Platform\Action;
 use MaxMind\Db\Reader;
 
@@ -21,14 +20,14 @@ class Get extends Action
             ->setHttpMethod(Action::HTTP_REQUEST_METHOD_GET)
             ->setHttpPath('/v1/ips/:ip')
             ->desc('Get locale from IP')
-            ->param('ip', '', new Text(100), 'IP Address')
+            ->param('ip', '', fn () => true, 'IP Address')
             ->groups(['api'])
             ->inject('geodb')
             ->inject('response')
             ->callback(fn ($ip, $geodb, $response) => $this->action($ip, $geodb, $response));
     }
 
-    public function action(string $ip, Reader $geodb /** @phpstan-ignore class.notFound */, Response $response): void
+    public function action(string $ip, Reader $geodb, Response $response): void
     {
         if (!\filter_var($ip, FILTER_VALIDATE_IP)) {
             throw new Exception('Invalid IP address', 400);
@@ -36,7 +35,6 @@ class Get extends Action
 
         $output = ['ip' => $ip];
 
-        // @phpstan-ignore-next-line
         $record = $geodb->get($ip);
 
         if ($record) {

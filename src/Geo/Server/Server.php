@@ -4,7 +4,6 @@ namespace Appwrite\Geo\Server;
 
 use Appwrite\Geo\Platform\Geo;
 use Exception;
-use Utopia\CLI\Console;
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;
 use Utopia\DSN\DSN;
@@ -31,7 +30,7 @@ class Server
         ]), new Container(), 'UTC');
         $this->http = $http;
 
-        $this->http->setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION) ?? Http::MODE_TYPE_PRODUCTION);
+        $this->http->setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
 
         $this->initResources();
         $this->initHooks();
@@ -40,16 +39,14 @@ class Server
 
     protected function initHooks(): void
     {
-
         $onStart = Http::onStart();
         $onStart->action(function () {
-            Console::log('Server started');
+            \error_log('Server started');
         });
     }
 
     protected function initResources(): void
     {
-
         $container = $this->http->getContainer();
 
         $geodb = new Dependency();
@@ -60,7 +57,6 @@ class Server
             if (!\is_readable($path)) {
                 throw new Exception('GeoIP database file not found or not readable: ' . $path);
             }
-            /** @phpstan-ignore class.notFound */
             return new Reader($path);
         });
 
@@ -69,15 +65,12 @@ class Server
         $logger = new Dependency();
         $logger->setName('logger');
 
-        /**
-         * Create logger
-         */
         $logger->setCallback(function () {
             $providerName = System::getEnv('GEO_LOGGING_PROVIDER', '');
             $providerConfig = System::getEnv('GEO_LOGGING_CONFIG', '');
 
             try {
-                $loggingProvider = new DSN($providerConfig ?? '');
+                $loggingProvider = new DSN($providerConfig);
 
                 $providerName = $loggingProvider->getScheme();
                 $providerConfig = match ($providerName) {
@@ -86,18 +79,18 @@ class Server
                     default => ['key' => $loggingProvider->getHost()],
                 };
             } catch (Throwable) {
-                $configChunks = \explode(";", ($providerConfig ?? ''));
+                $configChunks = \explode(";", $providerConfig);
 
                 $providerConfig = match ($providerName) {
-                    'sentry' => ['key' => $configChunks[0], 'projectId' => $configChunks[1] ?? '', 'host' => '',],
-                    'logowl' => ['ticket' => $configChunks[0] ?? '', 'host' => ''],
+                    'sentry' => ['key' => $configChunks[0], 'projectId' => $configChunks[1] ?? '', 'host' => ''],
+                    'logowl' => ['ticket' => $configChunks[0], 'host' => ''],
                     default => ['key' => $providerConfig],
                 };
             }
 
             $logger = null;
 
-            if (!empty($providerName) && is_array($providerConfig) && Logger::hasProvider($providerName)) {
+            if (!empty($providerName) && Logger::hasProvider($providerName)) {
                 $adapter = match ($providerName) {
                     'sentry' => new Sentry($providerConfig['projectId'] ?? '', $providerConfig['key'] ?? '', $providerConfig['host'] ?? ''),
                     'logowl' => new LogOwl($providerConfig['ticket'] ?? '', $providerConfig['host'] ?? ''),
@@ -118,8 +111,6 @@ class Server
 
         $container->set($logger);
         $container->set($log);
-
-
     }
 
     protected function initPlatform(): void
