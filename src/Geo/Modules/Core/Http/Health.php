@@ -26,6 +26,5 @@ class Health extends Action
     public function action(Response $response): void
     {
         $response->json(['status' => 'ok']);
-        $response->end();
     }
 }

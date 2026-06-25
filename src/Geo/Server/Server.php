@@ -5,6 +5,7 @@ namespace Appwrite\Geo\Server;
 use Appwrite\Geo\Platform\Geo;
 use Exception;
 use Utopia\Console;
+use Utopia\DI\Container;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server as SwooleServer;
 use Utopia\Http\Http;
@@ -23,14 +24,29 @@ class Server
 {
     protected Http $http;
 
+    protected Container $resources;
+
     public function __construct(?Http $http = null)
     {
-        $http ??= new Http(new SwooleServer('0.0.0.0', '80', []), 'UTC');
-        $this->http = $http;
+        $this->resources = new Container();
 
         Http::setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
 
         $this->initResources();
+
+        $http ??= new Http(
+            new SwooleServer(
+                host: '0.0.0.0',
+                port: '80',
+                settings: [
+                    'enable_coroutine' => true,
+                ],
+                resources: $this->resources,
+            ),
+            'UTC'
+        );
+        $this->http = $http;
+
         $this->initHooks();
         $this->initPlatform();
     }
@@ -45,7 +61,7 @@ class Server
 
     protected function initResources(): void
     {
-        $this->http->setResource('geodb', function () {
+        $this->resources->set('geodb', function () {
             $defaultPath = __DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2026-06.mmdb';
             $path = System::getEnv('GEO_DBIP_PATH', $defaultPath);
             if (!\is_readable($path)) {
@@ -54,7 +70,7 @@ class Server
             return new Reader($path);
         });
 
-        $this->http->setResource('logger', function () {
+        $this->resources->set('logger', function () {
             $providerName = System::getEnv('GEO_LOGGING_PROVIDER', '');
             $providerConfig = System::getEnv('GEO_LOGGING_CONFIG', '');
 
@@ -94,7 +110,7 @@ class Server
             return $logger;
         });
 
-        $this->http->setResource('log', fn () => new Log());
+        $this->resources->set('log', fn () => new Log());
     }
 
     protected function initPlatform(): void
