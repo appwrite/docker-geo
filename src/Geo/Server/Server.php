@@ -15,7 +15,6 @@ use Utopia\Logger\Adapter\AppSignal;
 use Utopia\Logger\Adapter\LogOwl;
 use Utopia\Logger\Adapter\Raygun;
 use Utopia\Logger\Adapter\Sentry;
-use Utopia\Logger\Log;
 use Utopia\Logger\Logger;
 use Utopia\Platform\Service;
 use Utopia\System\System;
@@ -109,8 +108,6 @@ class Server
 
             return $logger;
         });
-
-        $this->resources->set('log', fn () => new Log());
     }
 
     protected function initPlatform(): void

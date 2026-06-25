@@ -29,13 +29,12 @@ class Error extends Action
             ->inject('error')
             ->inject('logger')
             ->inject('response')
-            ->inject('log')
-            ->callback(fn ($route, $error, $logger, $response, $log) => $this->action($route, $error, $logger, $response, $log));
+            ->callback(fn ($route, $error, $logger, $response) => $this->action($route, $error, $logger, $response));
     }
 
-    public function action(?Route $route, Throwable $error, ?Logger $logger, Response $response, Log $log): void
+    public function action(?Route $route, Throwable $error, ?Logger $logger, Response $response): void
     {
-        $this->logError($log, $error, "httpError", $logger, $route);
+        $this->logError(new Log(), $error, "httpError", $logger, $route);
 
         $version = System::getEnv('GEO_VERSION', 'UNKNOWN');
         $message = $error->getMessage();
