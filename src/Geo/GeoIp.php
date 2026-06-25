@@ -23,17 +23,11 @@ final readonly class GeoIp
     public function getCountryCode(string $ip): ?string
     {
         $geo = $this->get($ip);
-        $countryCode = $geo['countryCode'] ?? null;
 
-        return \is_string($countryCode) && $countryCode !== ''
-            ? $countryCode
-            : null;
+        return $geo?->getCountryCode();
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function get(string $ip): ?array
+    public function get(string $ip): ?GeoRecord
     {
         if ($this->endpoint === '' || $this->secret === '') {
             return null;
@@ -56,6 +50,6 @@ final readonly class GeoIp
             return null;
         }
 
-        return \is_array($body) ? $body : null;
+        return \is_array($body) ? GeoRecord::fromArray($body) : null;
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Appwrite\Geo\GeoIp;
+use Appwrite\Geo\GeoRecord;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Utopia\Fetch\Client as FetchClient;
@@ -10,7 +11,7 @@ use Utopia\Fetch\Response;
 
 final class GeoIpTest extends TestCase
 {
-    public function testGetReturnsGeoData(): void
+    public function testGetReturnsGeoRecord(): void
     {
         $client = $this->createMock(FetchClient::class);
         $client
@@ -36,11 +37,20 @@ final class GeoIpTest extends TestCase
             ->expects($this->once())
             ->method('fetch')
             ->with('http://geo/v1/ips/8.8.8.8', FetchClient::METHOD_GET)
-            ->willReturn(new Response(200, '{"countryCode":"US"}', []));
+            ->willReturn(new Response(200, '{"countryCode":"US","city":{"en":"Mountain View"}}', []));
 
         $geo = new GeoIp('http://geo/', 'secret', $client);
+        $record = $geo->get('8.8.8.8');
 
-        $this->assertSame(['countryCode' => 'US'], $geo->get('8.8.8.8'));
+        $this->assertInstanceOf(GeoRecord::class, $record);
+        $this->assertSame('US', $record->getCountryCode());
+        $this->assertSame(['en' => 'Mountain View'], $record->get('city'));
+        $this->assertSame([
+            'countryCode' => 'US',
+            'city' => [
+                'en' => 'Mountain View',
+            ],
+        ], $record->toArray());
     }
 
     public function testGetCountryCodeReturnsCountryCode(): void
