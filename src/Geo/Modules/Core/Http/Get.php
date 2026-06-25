@@ -51,6 +51,5 @@ class Get extends Action
         }
 
         $response->json($output);
-        $response->end();
     }
 }

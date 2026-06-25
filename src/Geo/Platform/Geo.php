@@ -9,6 +9,6 @@ class Geo extends Platform
 {
     public function __construct()
     {
-        $this->addModule(new Core());
+        parent::__construct(new Core());
     }
 }

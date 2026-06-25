@@ -27,7 +27,7 @@ class Init extends Action
 
     public function action(Request $request): void
     {
-        $authHeader = $request->getHeader('authorization', '');
+        $authHeader = $request->getHeaderLine('authorization', '');
         $parts = \explode(' ', $authHeader, 2);
 
         if (\count($parts) !== 2 || \strtolower($parts[0]) !== 'bearer') {
