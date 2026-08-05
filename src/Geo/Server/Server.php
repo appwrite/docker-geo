@@ -61,7 +61,7 @@ class Server
     protected function initResources(): void
     {
         $this->resources->set('geodb', function () {
-            $defaultPath = __DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2026-06.mmdb';
+            $defaultPath = __DIR__ . '/../../../app/assets/dbip/dbip-country-lite-2026-08.mmdb';
             $path = System::getEnv('GEO_DBIP_PATH', $defaultPath);
             if (!\is_readable($path)) {
                 throw new Exception('GeoIP database file not found or not readable: ' . $path);
