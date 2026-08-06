@@ -3,7 +3,7 @@
     "type": "project",
     "require": {
         "php": ">=8.3.0",
-        "utopia-php/fetch": "0.5.*",
+        "utopia-php/fetch": "^1.1",
         "utopia-php/http": "^2.0@RC",
         "utopia-php/platform": "^1.0@RC",
         "utopia-php/di": "0.3.*",
