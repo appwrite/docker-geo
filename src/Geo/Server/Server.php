@@ -6,6 +6,7 @@ use Appwrite\Geo\Platform\Geo;
 use Exception;
 use InvalidArgumentException;
 use MaxMind\Db\Reader;
+use Psr\Http\Client\ClientInterface;
 use Throwable;
 use Utopia\Console;
 use Utopia\DI\Container;
@@ -27,13 +28,16 @@ class Server
 
     protected Container $resources;
 
-    public function __construct(?Http $http = null)
+    /**
+     * @param ClientInterface|null $client Transport for the Sentry exporter; defaults to span's cURL client
+     */
+    public function __construct(?Http $http = null, ?ClientInterface $client = null)
     {
-        $this->resources = new Container();
+        $this->resources = $http?->resources() ?? new Container();
 
         Http::setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
 
-        $this->initSpan();
+        $this->initSpan($client);
         $this->initResources();
 
         $http ??= new Http(
@@ -84,11 +88,11 @@ class Server
         });
     }
 
-    protected function initSpan(): void
+    protected function initSpan(?ClientInterface $client): void
     {
         Span::setStorage(new Coroutine());
 
-        // Server failures only, as the error handler printed before spans
+        // Only server failures leave the process: the error action marks client errors error.publish=false
         $sampler = static fn (Span $span): bool => $span->getError() !== null && $span->get('error.publish') !== false;
 
         $exporters = [new Stdout(sampler: $sampler)];
@@ -105,12 +109,13 @@ class Server
                 $tags = ['http.method', 'http.path', 'error.type', 'error.code'];
                 $version = System::getEnv('GEO_VERSION', '');
                 $exporters[] = new Sentry(
-                    sampler: static fn (Span $span): bool => $span->get('error.publish') !== false,
+                    sampler: $sampler,
                     dsn: 'https://' . $dsn->getPassword() . '@' . $dsn->getHost() . '/' . $dsn->getUser(),
                     environment: Http::isProduction() ? 'production' : 'staging',
                     release: empty($version) ? 'UNKNOWN' : $version,
                     serverName: \gethostname() ?: null,
                     classifier: static fn (string $key): SentryField => \in_array($key, $tags, true) ? SentryField::Tag : SentryField::Context,
+                    client: $client,
                 );
             } catch (Throwable $error) {
                 Console::error('Invalid GEO_LOGGING_CONFIG, error reporting is disabled: ' . $error->getMessage());

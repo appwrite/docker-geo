@@ -11,7 +11,8 @@
         "utopia-php/dsn": "^0.2.1",
         "utopia-php/cli": "^0.24",
         "utopia-php/console": "^0.1.1",
-        "utopia-php/span": "^4.2"
+        "utopia-php/span": "^4.2",
+        "psr/http-client": "^1.0"
     },
     "autoload": {
         "psr-4": {

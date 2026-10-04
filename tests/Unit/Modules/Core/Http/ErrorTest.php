@@ -5,7 +5,7 @@ namespace Tests\Unit\Modules\Core\Http;
 use Appwrite\Geo\Modules\Core\Http\Error;
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Utopia\Http\Response;
+use Tests\Unit\Response;
 use Utopia\Http\Route;
 use Utopia\Span\Exporter\Exporter;
 use Utopia\Span\Span;
@@ -99,27 +99,6 @@ class ErrorTest extends TestCase
 
     private function response(): Response
     {
-        return new class () extends Response {
-            public function write(string $content): bool
-            {
-                return true;
-            }
-
-            public function end(?string $content = null): void
-            {
-            }
-
-            protected function sendStatus(int $statusCode): void
-            {
-            }
-
-            public function sendHeader(string $key, array $value): void
-            {
-            }
-
-            protected function sendCookie(string $name, string $value, array $options): void
-            {
-            }
-        };
+        return new Response();
     }
 }
