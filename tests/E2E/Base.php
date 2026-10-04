@@ -41,13 +41,14 @@ abstract class Base extends TestCase
         $body = \file_get_contents($url, false, $context);
         $statusCode = 0;
         $responseHeaders = [];
+        $headerLines = \http_get_last_response_headers();
 
-        if (isset($http_response_header)) {
+        if (!empty($headerLines)) {
             // First line is status, e.g. "HTTP/1.1 200 OK"
-            if (\preg_match('/HTTP\/\S+\s+(\d+)/', $http_response_header[0], $matches)) {
+            if (\preg_match('/HTTP\/\S+\s+(\d+)/', $headerLines[0], $matches)) {
                 $statusCode = (int) $matches[1];
             }
-            foreach ($http_response_header as $header) {
+            foreach ($headerLines as $header) {
                 if (\str_contains($header, ':')) {
                     [$key, $value] = \explode(':', $header, 2);
                     $responseHeaders[\strtolower(\trim($key))] = \trim($value);
