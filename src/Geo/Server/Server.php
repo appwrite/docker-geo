@@ -4,19 +4,21 @@ namespace Appwrite\Geo\Server;
 
 use Appwrite\Geo\Platform\Geo;
 use Exception;
+use InvalidArgumentException;
+use MaxMind\Db\Reader;
+use Throwable;
 use Utopia\Console;
 use Utopia\DI\Container;
 use Utopia\DSN\DSN;
 use Utopia\Http\Adapter\Swoole\Server as SwooleServer;
 use Utopia\Http\Http;
-use MaxMind\Db\Reader;
-use Throwable;
-use Utopia\Logger\Adapter\AppSignal;
-use Utopia\Logger\Adapter\LogOwl;
-use Utopia\Logger\Adapter\Raygun;
-use Utopia\Logger\Adapter\Sentry;
-use Utopia\Logger\Logger;
+use Utopia\Http\Request;
 use Utopia\Platform\Service;
+use Utopia\Span\Exporter\Sentry;
+use Utopia\Span\Exporter\SentryField;
+use Utopia\Span\Exporter\Stdout;
+use Utopia\Span\Span;
+use Utopia\Span\Storage\Coroutine;
 use Utopia\System\System;
 
 class Server
@@ -31,6 +33,7 @@ class Server
 
         Http::setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
 
+        $this->initSpan();
         $this->initResources();
 
         $http ??= new Http(
@@ -56,6 +59,17 @@ class Server
         $onStart->action(function () {
             Console::log('Server started');
         });
+
+        Http::onRequest()
+            ->inject('request')
+            ->action(function (Request $request) {
+                Span::init('http.request');
+                Span::add('http.method', $request->getMethod());
+            });
+
+        Http::shutdown()
+            ->groups(['*'])
+            ->action(fn () => Span::current()?->finish());
     }
 
     protected function initResources(): void
@@ -68,46 +82,42 @@ class Server
             }
             return new Reader($path);
         });
+    }
 
-        $this->resources->set('logger', function () {
-            $providerName = System::getEnv('GEO_LOGGING_PROVIDER', '');
-            $providerConfig = System::getEnv('GEO_LOGGING_CONFIG', '');
+    protected function initSpan(): void
+    {
+        Span::setStorage(new Coroutine());
 
+        // Only server failures leave the process: the error action marks client errors error.publish=false
+        $sampler = static fn (Span $span): bool => $span->getError() !== null && $span->get('error.publish') !== false;
+
+        $exporters = [new Stdout(sampler: $sampler)];
+
+        // GEO_LOGGING_CONFIG: a sentry://PROJECT_ID:KEY@HOST DSN reports server errors to Sentry
+        $config = System::getEnv('GEO_LOGGING_CONFIG', '');
+        if (!empty($config)) {
             try {
-                $loggingProvider = new DSN($providerConfig);
+                $dsn = new DSN($config);
+                if ($dsn->getScheme() !== 'sentry') {
+                    throw new InvalidArgumentException('Only the sentry:// scheme is supported');
+                }
 
-                $providerName = $loggingProvider->getScheme();
-                $providerConfig = match ($providerName) {
-                    'sentry' => ['key' => $loggingProvider->getPassword(), 'projectId' => $loggingProvider->getUser() ?? '', 'host' => 'https://' . $loggingProvider->getHost()],
-                    'logowl' => ['ticket' => $loggingProvider->getUser() ?? '', 'host' => $loggingProvider->getHost()],
-                    default => ['key' => $loggingProvider->getHost()],
-                };
-            } catch (Throwable) {
-                $configChunks = \explode(";", $providerConfig);
-
-                $providerConfig = match ($providerName) {
-                    'sentry' => ['key' => $configChunks[0], 'projectId' => $configChunks[1] ?? '', 'host' => ''],
-                    'logowl' => ['ticket' => $configChunks[0], 'host' => ''],
-                    default => ['key' => $providerConfig],
-                };
+                $tags = ['http.method', 'http.path', 'error.type', 'error.code'];
+                $version = System::getEnv('GEO_VERSION', '');
+                $exporters[] = new Sentry(
+                    sampler: $sampler,
+                    dsn: 'https://' . $dsn->getPassword() . '@' . $dsn->getHost() . '/' . $dsn->getUser(),
+                    environment: Http::isProduction() ? 'production' : 'staging',
+                    release: empty($version) ? 'UNKNOWN' : $version,
+                    serverName: \gethostname() ?: null,
+                    classifier: static fn (string $key): SentryField => \in_array($key, $tags, true) ? SentryField::Tag : SentryField::Context,
+                );
+            } catch (Throwable $error) {
+                Console::error('Invalid GEO_LOGGING_CONFIG, error reporting is disabled: ' . $error->getMessage());
             }
+        }
 
-            $logger = null;
-
-            if (!empty($providerName) && Logger::hasProvider($providerName)) {
-                $adapter = match ($providerName) {
-                    'sentry' => new Sentry($providerConfig['projectId'] ?? '', $providerConfig['key'] ?? '', $providerConfig['host'] ?? ''),
-                    'logowl' => new LogOwl($providerConfig['ticket'] ?? '', $providerConfig['host'] ?? ''),
-                    'raygun' => new Raygun($providerConfig['key'] ?? ''),
-                    'appsignal' => new AppSignal($providerConfig['key'] ?? ''),
-                    default => throw new Exception('Provider "' . $providerName . '" not supported.')
-                };
-
-                $logger = new Logger($adapter);
-            }
-
-            return $logger;
-        });
+        Span::setExporters(...$exporters);
     }
 
     protected function initPlatform(): void
