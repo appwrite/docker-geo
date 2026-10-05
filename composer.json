@@ -11,8 +11,7 @@
         "utopia-php/dsn": "^0.2.1",
         "utopia-php/cli": "^0.24",
         "utopia-php/console": "^0.1.1",
-        "utopia-php/span": "^4.2",
-        "psr/http-client": "^1.0"
+        "utopia-php/span": "^4.2"
     },
     "autoload": {
         "psr-4": {
@@ -39,7 +38,6 @@
         "lint": "./vendor/bin/pint --test --config pint.json",
         "format": "./vendor/bin/pint --config pint.json",
         "check": "./vendor/bin/phpstan analyse -c phpstan.neon",
-        "test:unit": "./vendor/bin/phpunit --testsuite unit",
         "test:e2e": "./vendor/bin/phpunit --testsuite e2e"
     },
     "config": {

@@ -6,7 +6,6 @@ use Appwrite\Geo\Platform\Geo;
 use Exception;
 use InvalidArgumentException;
 use MaxMind\Db\Reader;
-use Psr\Http\Client\ClientInterface;
 use Throwable;
 use Utopia\Console;
 use Utopia\DI\Container;
@@ -28,16 +27,13 @@ class Server
 
     protected Container $resources;
 
-    /**
-     * @param ClientInterface|null $client Transport for the Sentry exporter; defaults to span's cURL client
-     */
-    public function __construct(?Http $http = null, ?ClientInterface $client = null)
+    public function __construct(?Http $http = null)
     {
-        $this->resources = $http?->resources() ?? new Container();
+        $this->resources = new Container();
 
         Http::setMode(System::getEnv('GEO_ENV', Http::MODE_TYPE_PRODUCTION));
 
-        $this->initSpan($client);
+        $this->initSpan();
         $this->initResources();
 
         $http ??= new Http(
@@ -88,7 +84,7 @@ class Server
         });
     }
 
-    protected function initSpan(?ClientInterface $client): void
+    protected function initSpan(): void
     {
         Span::setStorage(new Coroutine());
 
@@ -115,7 +111,6 @@ class Server
                     release: empty($version) ? 'UNKNOWN' : $version,
                     serverName: \gethostname() ?: null,
                     classifier: static fn (string $key): SentryField => \in_array($key, $tags, true) ? SentryField::Tag : SentryField::Context,
-                    client: $client,
                 );
             } catch (Throwable $error) {
                 Console::error('Invalid GEO_LOGGING_CONFIG, error reporting is disabled: ' . $error->getMessage());

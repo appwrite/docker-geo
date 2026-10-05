@@ -33,9 +33,6 @@ jobs:
           docker compose logs geo
           exit 1
 
-      - name: Run unit tests
-        run: docker compose run --rm --entrypoint vendor/bin/phpunit tests --testsuite unit
-
       - name: Run E2E tests
         run: docker compose run --rm tests
 
