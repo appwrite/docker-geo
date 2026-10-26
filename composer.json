@@ -8,7 +8,7 @@
         "utopia-php/platform": "^1.0@RC",
         "utopia-php/di": "0.3.*",
         "utopia-php/system": "^0.10.1",
-        "utopia-php/dsn": "^0.2.1",
+        "utopia-php/dsn": "^0.2.1 || ^1.0",
         "utopia-php/cli": "^0.24",
         "utopia-php/console": "^0.1.1",
         "utopia-php/span": "^4.2"
