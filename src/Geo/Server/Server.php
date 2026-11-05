@@ -39,7 +39,7 @@ class Server
         $http ??= new Http(
             new SwooleServer(
                 host: '0.0.0.0',
-                port: '80',
+                port: (string) System::getEnv('GEO_PORT', '80'),
                 settings: [
                     'enable_coroutine' => true,
                 ],
