@@ -36,6 +36,20 @@ jobs:
       - name: Run E2E tests
         run: docker compose run --rm tests
 
+      - name: Serve on GEO_PORT as a non-root user
+        run: |
+          docker run -d --name geo-port --user 82:82 --cap-drop ALL \
+            --sysctl net.ipv4.ip_unprivileged_port_start=1024 \
+            -e GEO_PORT=8081 -e GEO_SECRET=test-secret -p 8081:8081 geo-dev
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8081/v1/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs geo-port
+          exit 1
+
       - name: Show logs on failure
         if: failure()
         run: docker compose logs geo
