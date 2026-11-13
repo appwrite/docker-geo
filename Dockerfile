@@ -14,6 +14,8 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
 
 FROM appwrite/base:2.2.11 AS final
 
+RUN apk upgrade --no-cache
+
 LABEL maintainer="team@appwrite.io"
 
 WORKDIR /usr/src/code
