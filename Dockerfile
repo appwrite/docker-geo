@@ -1,4 +1,4 @@
-FROM composer:2 AS composer
+FROM composer:2@sha256:0c8e663f14c94d07b3c45b175c51f5a14718508f21fe4dd7e54f09488dd0ed71 AS composer
 
 ARG TESTING=false
 ENV TESTING=$TESTING
@@ -12,7 +12,7 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM appwrite/base:2.2.11 AS final
+FROM appwrite/base:2.2.11@sha256:d4a5d23eef42690bae5d6d00aa0555d22042f1dbfff1bdcc835fd6d144aa147a AS final
 
 RUN apk upgrade --no-cache
 
