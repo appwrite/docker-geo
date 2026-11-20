@@ -12,7 +12,7 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM appwrite/base:2.2.11@sha256:d4a5d23eef42690bae5d6d00aa0555d22042f1dbfff1bdcc835fd6d144aa147a AS final
+FROM appwrite/base:2.3.0@sha256:e9519544a2315be040f150625d07c0bb24693a043130fc9e5f628411d4dfd5a7 AS final
 
 RUN apk upgrade --no-cache
 
